@@ -2,8 +2,18 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>Daily Quote</title>
+
+  <!-- PWA -->
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#0a0818">
+
+  <!-- iOS home screen -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <meta name="apple-mobile-web-app-title" content="Daily Quote">
+  <link rel="apple-touch-icon" href="icons/icon.svg">
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;1,400;1,700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
   <style>
     :root {
@@ -135,13 +145,22 @@
         0 24px 48px rgba(0,0,0,0.38);
     }
 
-    .card.animating {
-      animation: fadeUp 0.45s ease forwards;
+    .quote-body.fade-in {
+      animation: fadeIn 0.38s ease forwards;
     }
 
-    @keyframes fadeUp {
-      from { opacity: 0; transform: translateY(10px); }
+    .quote-body.fade-out {
+      animation: fadeOut 0.17s ease forwards;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(9px); }
       to   { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes fadeOut {
+      from { opacity: 1; transform: translateY(0); }
+      to   { opacity: 0; transform: translateY(-6px); }
     }
 
     .open-quote {
@@ -337,9 +356,45 @@
         { text: "The good life is one inspired by love and guided by knowledge.", author: "Bertrand Russell" },
         { text: "Life is not measured by the number of breaths we take, but by the moments that take our breath away.", author: "Maya Angelou" },
       ],
+      focus: [
+        { text: "Concentrate all your thoughts upon the work at hand. The sun's rays do not burn until brought to a focus.", author: "Alexander Graham Bell" },
+        { text: "The secret of getting things done is to act.", author: "Dante Alighieri" },
+        { text: "You can do anything, but not everything.", author: "David Allen" },
+        { text: "It is not enough to be busy. The question is: what are we busy about?", author: "Henry David Thoreau" },
+        { text: "Lack of direction, not lack of time, is the problem. We all have twenty-four hour days.", author: "Zig Ziglar" },
+        { text: "The successful warrior is the average man, with laser-like focus.", author: "Bruce Lee" },
+        { text: "Starve your distractions. Feed your focus.", author: "Unknown" },
+        { text: "Where focus goes, energy flows.", author: "Tony Robbins" },
+        { text: "The main thing is to keep the main thing the main thing.", author: "Stephen Covey" },
+        { text: "Energy is the essence of life. Every day you decide how you're going to use it.", author: "Oprah Winfrey" },
+      ],
+      drive: [
+        { text: "Energy and persistence conquer all things.", author: "Benjamin Franklin" },
+        { text: "What you get by achieving your goals is not as important as what you become by achieving your goals.", author: "Zig Ziglar" },
+        { text: "The only limit to our realization of tomorrow is our doubts of today.", author: "Franklin D. Roosevelt" },
+        { text: "A dream doesn't become reality through magic; it takes sweat, determination, and hard work.", author: "Colin Powell" },
+        { text: "Don't wish it were easier. Wish you were better.", author: "Jim Rohn" },
+        { text: "You don't have to be great to start, but you have to start to be great.", author: "Zig Ziglar" },
+        { text: "Push yourself, because no one else is going to do it for you.", author: "Unknown" },
+        { text: "The difference between the impossible and the possible lies in a person's determination.", author: "Tommy Lasorda" },
+        { text: "Discipline is the bridge between goals and accomplishment.", author: "Jim Rohn" },
+        { text: "There is no substitute for hard work.", author: "Thomas Edison" },
+      ],
+      sports: [
+        { text: "Champions keep playing until they get it right.", author: "Billie Jean King" },
+        { text: "It's not whether you get knocked down; it's whether you get up.", author: "Vince Lombardi" },
+        { text: "The more difficult the victory, the greater the happiness in winning.", author: "Pelé" },
+        { text: "You miss 100% of the shots you don't take.", author: "Wayne Gretzky" },
+        { text: "Never give up! Failure and rejection are only the first step to succeeding.", author: "Jim Valvano" },
+        { text: "The harder the battle, the sweeter the victory.", author: "Les Brown" },
+        { text: "Gold medals aren't really made of gold. They're made of sweat, determination, and a hard-to-find alloy called guts.", author: "Dan Gable" },
+        { text: "You have to expect things of yourself before you can do them.", author: "Michael Jordan" },
+        { text: "It ain't over till it's over.", author: "Yogi Berra" },
+        { text: "Pain is temporary. Quitting lasts forever.", author: "Lance Armstrong" },
+      ],
     };
 
-    const CATEGORIES = ['today', 'motivation', 'wisdom', 'success', 'happiness', 'life'];
+    const CATEGORIES = ['today', 'motivation', 'wisdom', 'success', 'happiness', 'life', 'focus', 'drive', 'sports'];
 
     // ── State ──────────────────────────────────────────────────────────────
 
@@ -431,27 +486,33 @@
       currentQuote = quote;
       const card = document.getElementById('card');
 
-      card.innerHTML = `
-        <span class="open-quote">\u201C</span>
-        <p class="quote-text">${escapeHtml(quote.text)}</p>
-        <div class="quote-author">${escapeHtml(quote.author)}</div>
-        <div class="actions">
-          <button class="btn" id="copyBtn" onclick="copyQuote()">
-            ${iconCopy()} Copy
-          </button>
-          <button class="btn" onclick="shareQuote()">
-            ${iconShare()} Share
-          </button>
-          <button class="btn btn-new" onclick="newQuote()">
-            ${iconRefresh()} New Quote
-          </button>
+      const buildContent = () => `
+        <div class="quote-body fade-in">
+          <span class="open-quote">\u201C</span>
+          <p class="quote-text">${escapeHtml(quote.text)}</p>
+          <div class="quote-author">${escapeHtml(quote.author)}</div>
+          <div class="actions">
+            <button class="btn" id="copyBtn" onclick="copyQuote()">
+              ${iconCopy()} Copy
+            </button>
+            <button class="btn" onclick="shareQuote()">
+              ${iconShare()} Share
+            </button>
+            <button class="btn btn-new" onclick="newQuote()">
+              ${iconRefresh()} New Quote
+            </button>
+          </div>
         </div>
       `;
 
-      // Trigger animation
-      card.classList.remove('animating');
-      void card.offsetWidth;
-      card.classList.add('animating');
+      const existing = card.querySelector('.quote-body');
+      if (existing) {
+        existing.classList.remove('fade-in');
+        existing.classList.add('fade-out');
+        setTimeout(() => { card.innerHTML = buildContent(); }, 170);
+      } else {
+        card.innerHTML = buildContent();
+      }
     }
 
     function renderCategories() {
@@ -574,6 +635,11 @@
     }
 
     init();
+
+    // Register service worker
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('./sw.js');
+    }
   </script>
 </body>
 </html>
