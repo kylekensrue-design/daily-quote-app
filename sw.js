@@ -42,7 +42,8 @@ self.addEventListener('fetch', e => {
       }
       // Not cached yet — fetch and cache
       return fetch(e.request).then(res => {
-        caches.open(CACHE).then(c => c.put(e.request, res.clone()));
+        const clone = res.clone();
+        caches.open(CACHE).then(c => c.put(e.request, clone));
         return res;
       });
     })
