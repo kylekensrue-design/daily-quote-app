@@ -14,6 +14,15 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black">
   <meta name="apple-mobile-web-app-title" content="Daily Quote">
   <link rel="apple-touch-icon" href="icons/icon.svg">
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-11JK22HMX4"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-11JK22HMX4');
+  </script>
+
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;1,400;1,700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
   <style>
     :root {
@@ -526,10 +535,15 @@
 
     // ── Interactions ───────────────────────────────────────────────────────
 
+    function track(event, params) {
+      if (typeof gtag === 'function') gtag('event', event, params);
+    }
+
     async function selectCategory(cat) {
       if (cat === activeCategory) return;
       activeCategory = cat;
       renderCategories();
+      track('select_category', { category: cat });
 
       if (cat === 'today') {
         renderLoading();
@@ -546,6 +560,7 @@
       } else {
         renderCard(nextCategoryQuote(activeCategory));
       }
+      track('new_quote', { category: activeCategory });
     }
 
     async function copyQuote() {
@@ -566,6 +581,8 @@
         document.body.removeChild(ta);
       }
 
+      track('copy_quote', { category: activeCategory, author: currentQuote.author });
+
       const btn = document.getElementById('copyBtn');
       if (!btn) return;
       btn.classList.add('success');
@@ -582,10 +599,12 @@
       if (navigator.share) {
         try {
           await navigator.share({ title: 'Daily Quote', text });
+          track('share_quote', { method: 'native', category: activeCategory, author: currentQuote.author });
           return;
         } catch { /* cancelled or unavailable */ }
       }
       // Fallback: copy
+      track('share_quote', { method: 'copy_fallback', category: activeCategory, author: currentQuote.author });
       await copyQuote();
     }
 
