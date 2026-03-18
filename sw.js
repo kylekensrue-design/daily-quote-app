@@ -1,4 +1,4 @@
-const CACHE = 'daily-quote-v4';
+const CACHE = 'daily-quote-v5';
 const APP_SHELL = [
   './',
   './index.html',
