@@ -470,7 +470,7 @@
         if (date === todayStr()) return quote;
       }
       try {
-        const res = await fetch('https://daily-quote-app.kyle-kensrue.workers.dev/');
+        const res = await fetch('https://zenquotes-proxy.kyle-kensrue.workers.dev/');
         if (!res.ok) throw new Error('bad status');
         const data = await res.json();
         const quote = {
